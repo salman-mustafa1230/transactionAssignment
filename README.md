@@ -70,3 +70,30 @@ The project follows a **layered architecture**.
 1. We can separate out the Batch job so it can use separate resource based on scalability needs.
 2. CI/CD pipeline integration with Docker & Kubernetes.
 3. Enable Actuator to monitor metrics or can be monitored by other observability tools like Datadog.
+
+## Architecture
+
+### Class Diagram
+```mermaid
+classDiagram
+    class BatchConfiguration {
+        +importTransactionsJob() : Job
+        +step1() : Step
+        +batchDataSourceInitializer(): DataSourceInitializer
+        +stepExecutionListener(): StepExecutionListener
+    }
+    class TrxRecrodReader {
+        +getTransactions() : FlatFileItemReader<Transactions>
+    }
+    class TrxRecordProcessor {
+        +process(Transaction) : Transactions
+    }
+    class TrxRecordWriter {
+        +write(Chunk<? extends Transactions> chunk)
+    }
+
+    BatchConfiguration --> TrxRecrodReader
+    BatchConfiguration --> TrxRecordProcessor
+    BatchConfiguration --> TrxRecordWriter
+
+
