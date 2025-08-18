@@ -61,15 +61,15 @@ The project follows a **layered architecture**.
 
 1. Configured under batch/ package.
 2. Jobs can be triggered via [api/batch/run](http://localhost:8080/swagger-ui/index.html#/job-controller/runBatchJob) endpoint.
-3. Used custom converter for date and time as its not available by default.
+3. Used a custom converter for date and time as it's not available by default.
 4. Spring batch configurations are in BatchConfiguration.java file.
 5. Used flyway migrations for creating the transaction table.
 6. **Example:** Transaction Batch Job reads transactions from txt file in chunks, processes them, and writes results to DB in chunks as well.
 
 # Future proofing
-1. We can separate out the Batch job so it can use separate resource based on scalability needs.
+1. We can separate out the Batch job so it can use a separate resource based on scalability needs.
 2. CI/CD pipeline integration with Docker & Kubernetes.
-3. Enable Actuator to monitor metrics or can be monitored by other observability tools like Datadog.
+3. Enable the Actuator to monitor metrics, or it can be monitored by other observability tools like Datadog.
 
 ## Architecture
 
@@ -95,5 +95,22 @@ classDiagram
     BatchConfiguration --> TrxRecrodReader
     BatchConfiguration --> TrxRecordProcessor
     BatchConfiguration --> TrxRecordWriter
+```
+### Activity Diagram
+```mermaid
+flowchart TD
+    A["Start Batch Job"] --> B["Read File - Spring Batch Reader"]
+    B --> C["Process Transactions"]
+    C --> D["Write to DB - Spring Batch Writer"]
+    D --> E{"Batch Completed?"}
+    E -- Yes --> F["Expose REST API"]
+    E -- No --> B
 
+    F --> G["GET /api/v1/transactions (Search + Pagination)"]
+    F --> H["PUT /api/v1/transactions/{id}/description (Update Description)"]
+    H --> I["Handle Concurrent Update with Optimistic Locking"]
+    G --> J["Return Paginated Results"]
+    I --> J["Return Updated Record"]
+    J --> K["End"]
+```
 
